@@ -89,7 +89,7 @@ public class AnalyzerService {
 
 	        for (ProjectAnalyzer pa : analyzerList) {
 	            String createdby = getCreatedBy(pa.getCreatedby());
-                String fileUrl = "http://localhost:7007/analyzer/" + pa.getReportid();  
+                String fileUrl = "http://192.168.0.132:7007/analyzer/" + pa.getReportid();  
 	            List<AnalyzerTasks> analyzertasks = getReportTasks(pa.getReportid());
 
 	            String totalTasks = String.valueOf(analyzertasks.size());
@@ -116,7 +116,7 @@ public class AnalyzerService {
 	    }
 
 	    private String getCreatedBy(String userId) {
-	        String url = "http://localhost:7002/users/getName?userId=" + userId;
+	        String url = "http://192.168.0.132:7002/users/getName?userId=" + userId;
 	        try {
 	            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 	            return response.getStatusCode().is2xxSuccessful() ? response.getBody() : "Unknown";
@@ -144,7 +144,7 @@ public class AnalyzerService {
 	        Optional<AnalyzedData> analyzedDataOpt = dataRepo.findByReportid(reportid);
 	        List<AnalyzerTasks> analyzerTasks = tasksRepo.findByReportid(reportid);
 	        List<FetchedDues> fetchedDues = duedateRepo.findByReportid(reportid);
-            String fileUrl = "http://localhost:7007/analyzer/" + reportid;  
+            String fileUrl = "http://192.168.0.132:7007/analyzer/" + reportid;  
 
 	        if (projectAnalyzerOpt.isPresent() && analyzedDataOpt.isPresent()) {
 	            ProjectAnalyzer projectAnalyzer = projectAnalyzerOpt.get();

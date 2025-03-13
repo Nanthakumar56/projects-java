@@ -1,12 +1,17 @@
 package com.project.analyzer.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.tomcat.util.file.ConfigurationSource.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,26 +65,33 @@ public class AnalyzerController {
 	    }
 	 
 	 @GetMapping("/{reportid}")
-	    public ResponseEntity<byte[]> getDocuments(
-	            @PathVariable String reportid,
-	            @RequestParam(required = false, defaultValue = "false") boolean download) {
-	        Optional<ProjectAnalyzer> documents = analyzerService.getDocument(reportid);
-	        if (documents.isPresent()) {
-	        	ProjectAnalyzer img = documents.get();
-	            HttpHeaders headers = new HttpHeaders();
-	            
-	            if (download) {
-	                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + img.getDocname() + "\"");
-	            } else {
-	                headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + img.getDocname() + "\"");
-	            }
+	 public ResponseEntity<ByteArrayResource> getDocuments(
+	         @PathVariable String reportid,
+	         @RequestParam(required = false, defaultValue = "false") boolean download) throws IOException {
+	     Optional<ProjectAnalyzer> documents = analyzerService.getDocument(reportid);
+	     
+	     if (documents.isPresent()) {
+	         ProjectAnalyzer img = documents.get();
+	         ByteArrayResource resource = new ByteArrayResource(img.getFile());
 
-	            return new ResponseEntity<>(img.getFile(), headers, HttpStatus.OK);
-	        } else {
-	            return ResponseEntity.notFound().build();
-	        }
-	    }
-	    
+	         HttpHeaders headers = new HttpHeaders();
+	         headers.add(HttpHeaders.CONTENT_TYPE, Files.probeContentType(Path.of(img.getDocname()))); 
+	         headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(img.getFile().length));
+
+	         if (download) {
+	             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + img.getDocname() + "\"");
+	         } else {
+	             headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + img.getDocname() + "\"");
+	         }
+
+	         return ResponseEntity.ok()
+	                 .headers(headers)
+	                 .body(resource);
+	     } else {
+	         return ResponseEntity.notFound().build();
+	     }
+	 }
+
 	    @GetMapping("/report")
 	    public ResponseEntity<?> getAnalyzedData(@RequestParam String reportid) {
 	    	AnalyzedDataDto analyzeddata = analyzerService.getAnalyzedData(reportid);
