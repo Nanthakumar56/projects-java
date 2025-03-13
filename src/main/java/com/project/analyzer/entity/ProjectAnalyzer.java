@@ -75,14 +75,4 @@ public class ProjectAnalyzer
 	public void setCreatedat(LocalDateTime createdat) {
 		this.createdat = createdat;
 	}
-
-	public byte[] getFile() {
-		return file;
-	}
-
-	public void setFile(byte[] file) {
-		this.file = file;
-	}
-	
-	
 }
